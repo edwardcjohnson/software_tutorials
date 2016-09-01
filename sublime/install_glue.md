@@ -1,7 +1,7 @@
 ## How to install Glue for Sublime
 
 1.The simplest method of installation is through the Sublime Text console. 
-The console is accessed via the `ctrl+`` shortcut or the View > Show Console menu. 
+The console is accessed via the ctrl+` shortcut or the View > Show Console menu. 
 
 2.Paste the following python code:
 
