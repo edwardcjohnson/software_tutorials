@@ -4,3 +4,5 @@
 2. Enter: sudo add-apt-repository ppa:webupd8team/sublime-text-3
 3. Enter: sudo apt-get update
 4. Enter: sudo apt-get install sublime-text-installer
+
+To launch Sublime from the Terminal enter: subl
