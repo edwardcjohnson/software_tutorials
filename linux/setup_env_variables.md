@@ -3,16 +3,16 @@
 * Add the variables. E.g.:
   * `export JAVA_HOME=/opt/openjdk11`
 * Save the file and source it, so the changes take effect:
-  * source ~/.bash_profile
+  * `source ~/.bash_profile`
 2. Setting Persistent Global Environment Variables.
 * When an environment variable needs to persist globally across the entire system, 
 we can set it in the default profile loaded by all users on the system.
-* All global profile settings are stored under /etc/profile.
+* All global profile settings are stored under `/etc/profile`.
 While this file can be edited directory, 
-it is recommended to store global environment variables in a directory named /etc/profile.d, 
+it is recommended to store global environment variables in a directory named `/etc/profile.d`, 
 where you will find a list of files that are used to set environment variables for the entire system.
 
-* Create a new file under /etc/profile.d to store the global environment variable(s). 
+* Create a new file under `/etc/profile.d` to store the global environment variable(s). 
 * The name of the file should be contextual to help others understand its purpose.
  * `sudo touch /etc/profile.d/http_proxy.sh`
 * Open the default profile into a text editor.
