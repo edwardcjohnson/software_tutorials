@@ -1,14 +1,14 @@
 1. Persisting Environment Variables for a User:
-`vim ~/.bash_profile`
-Add the variables. E.g.:
-`export JAVA_HOME=/opt/openjdk11`
-Save the file and source it, so the changes take effect:
-source ~/.bash_profile
+* `vim ~/.bash_profile`
+* Add the variables. E.g.:
+  * `export JAVA_HOME=/opt/openjdk11`
+* Save the file and source it, so the changes take effect:
+  * source ~/.bash_profile
 2. Setting Persistent Global Environment Variables.
-When an environment variable needs to persist globally across the entire system, 
-we can set it in the default profile loaded by all users on the system.
-All global profile settings are stored under /etc/profile.
-While this file can be edited directory, 
+* When an environment variable needs to persist globally across the entire system, 
+\nwe can set it in the default profile loaded by all users on the system.
+* All global profile settings are stored under /etc/profile.
+\nWhile this file can be edited directory, 
 it is recommended to store global environment variables in a directory named /etc/profile.d, 
 where you will find a list of files that are used to set environment variables for the entire system.
 
