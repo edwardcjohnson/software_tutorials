@@ -3,4 +3,4 @@
 * https://linuxize.com/post/how-to-mount-cifs-windows-share-on-linux/
 
 command:
-sudo mount -t cifs <source> <destination> -o ro,username=<username>,domain=<domain of windows user>
+`sudo mount -t cifs <source> <destination> -o ro,username=<username>,domain=<domain of windows user>`
