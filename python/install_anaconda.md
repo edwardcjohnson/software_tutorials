@@ -7,6 +7,14 @@
   2. For the Python 2.7 version enter: `bash Anaconda3-4.2.0-Linux-x86_64.sh`
 
 4. Follow the instructions on the screen
-
-To update Anaconda enter:
+5. To update Anaconda enter:
 `conda update anaconda`
+6. Source ~/.bashrc since PATH was updated
+`source ~/.bashrc`
+7. Create a new environment
+`conda create -n <yourenvname> python=3.8 anaconda`
+8. Activate the new environment
+`source activate <yourenvname>`
+9. If desired, install jupyter 
+`conda install jupyter`
+
