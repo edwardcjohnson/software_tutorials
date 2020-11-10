@@ -2,7 +2,7 @@
 
 1. Open the Terminal: `ctrl + alt + t`
 2. Enter: `wget https://repo.anaconda.com/archive/Anaconda3-2020.07-Linux-x86_64.sh`
-3. Enter:`bash Anaconda3-2020.02-Linux-x86_64.sh`
+3. Enter:`bash Anaconda3-2020.07-Linux-x86_64.sh`
 4. Follow the instructions on the screen
 5. To update Anaconda enter:
 `conda update anaconda`
