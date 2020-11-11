@@ -8,3 +8,5 @@
  * Set you environmental vars in Gitlab. Be sure all vars referenced in setup.py are captured.
  * If you want to deposit your built pypi package to your personal Gitlab pypi library then follow this:
    * https://docs.gitlab.com/ee/user/packages/pypi_repository/index.html
+ * Start a jupyter nb inside the container using:
+   * jupyter notebook --ip=0.0.0.0 --allow-root
