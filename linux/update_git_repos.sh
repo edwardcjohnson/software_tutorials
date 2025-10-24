@@ -1,25 +1,48 @@
 #!/bin/bash
 
-# store the current dir
-CUR_DIR=$(pwd)
+# --- Setup and Safety ---
+set -euo pipefail # Exit on any error, treat unset variables as an error, and catch errors in pipelines.
 
-# Let the person running the script know what's going on.
-echo "\n\033[1mPulling in latest changes for all repositories...\033[0m\n"
+# Define ANSI color codes for better output
+GREEN='\033[32m'
+YELLOW='\033[33m'
+RED='\033[31m'
+NC='\033[0m' # No Color
 
-# Find all git repositories and update it to the master latest revision
-for i in $(find . -name ".git" | cut -c 3-); do
-    echo "";
-    echo "\033[33m"+$i+"\033[0m";
+# Initial Message
+echo -e "\n${YELLOW}Pulling in latest changes for all Git repositories...${NC}\n"
 
-    # We have to go to the .git parent directory to call the pull command
-    cd "$i";
-    cd ..;
+# --- Main Logic ---
 
-    # finally pull
-    git pull origin master;
+# Use find to locate all .git directories and print their parent directory path,
+# using -print0 for safety with filenames that contain spaces.
+find . -type d -name ".git" -print0 | while IFS= read -r -d $'\000' gitdir; do
+    
+    # Get the parent directory path and remove the leading './' for clean display
+    REPO_DIR=$(dirname "$gitdir")
+    DISPLAY_DIR=${REPO_DIR#./} # Removes the leading "./" if it exists
 
-    # lets get back to the CUR_DIR
-    cd $CUR_DIR
+    echo -e "${YELLOW}--- Updating ${DISPLAY_DIR} ---${NC}"
+    
+    # Change into the repository directory using pushd (stores current location)
+    pushd "$REPO_DIR" > /dev/null
+
+    # Perform the pull
+    # Use 'git pull' which respects the current branch's tracking configuration
+    git pull
+    PULL_STATUS=$? # Store the exit status of the previous command (git pull)
+
+    if [ $PULL_STATUS -eq 0 ]; then
+        echo -e "${GREEN}SUCCESS:${NC} Repository up-to-date."
+    else
+        echo -e "${RED}ERROR:${NC} Failed to pull changes. Please check the repository manually."
+    fi
+
+    # Return to the starting directory using popd
+    popd > /dev/null
+    
+    echo "" # Add a newline separator
 done
 
-echo "\n\033[32mComplete!\033[0m\n"
+# --- Completion Message ---
+echo -e "\n${GREEN}Complete! Check the output for any errors.${NC}\n"
