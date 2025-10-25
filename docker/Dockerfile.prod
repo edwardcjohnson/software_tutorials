@@ -1,45 +1,64 @@
-# This Dockerfile was inspired by the kedro-docker template: 
-# https://github.com/quantumblacklabs/kedro-docker/blob/main/kedro_docker/template/Dockerfile.simple
-# Build the image with:
-# docker build --build-arg PYPI_INDEX_URL=<index_url> -f ./Dockerfile.prod -t <image_name>:<image_tag> .
+# ----------------------------------------------------------------------
+# STAGE 1: BUILD (Install Dependencies)
+# ----------------------------------------------------------------------
 ARG VARIANT=3.10-bullseye
-FROM python:${VARIANT}
+FROM python:${VARIANT} AS builder
 
-# install project requirements
+# Ensure build essentials for any package compilation (e.g., NumPy, Pandas)
+RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
+    && apt-get install -y --no-install-recommends gcc g++
+
+# Install project requirements
 ARG PYPI_INDEX_URL
-
 COPY src/requirements.txt /tmp/requirements.txt
-RUN pip install -r /tmp/requirements.txt --index-url=$PYPI_INDEX_URL && rm -f /tmp/requirements.txt
 
-# add kedro user
+# Use --no-cache-dir to prevent pip from bloating the build stage layer
+RUN pip install -r /tmp/requirements.txt --index-url=$PYPI_INDEX_URL --no-cache-dir
+
+# ----------------------------------------------------------------------
+# STAGE 2: ODBC DRIVER (If needed for SQL connections)
+# ----------------------------------------------------------------------
+# This stage is highly optimized to install system dependencies (ODBC driver)
+# and can be commented out if you don't use SQLQueryDataSet.
+FROM debian:bullseye AS odbc_builder
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends unixodbc-dev wget \
+    # Add Microsoft ODBC repository
+    && wget -qO- https://packages.microsoft.com/keys/microsoft.asc | apt-key add - \
+    && wget -qO- https://packages.microsoft.com/config/debian/11/prod.list > /etc/apt/sources.list.d/mssql-release.list \
+    && apt-get update \
+    && ACCEPT_EULA=Y apt-get install -y msodbcsql17 \
+    # Clean up APT to minimize layer size
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* /tmp/*
+
+# ----------------------------------------------------------------------
+# STAGE 3: RUNTIME (Final Production Image)
+# ----------------------------------------------------------------------
+ARG RUNTIME_VARIANT=3.10-slim-bullseye
+FROM python:${RUNTIME_VARIANT}
+
+# Install necessary runtime dependencies (copied from the ODBC stage)
+COPY --from=odbc_builder /usr/lib/x86_64-linux-gnu /usr/lib/x86_64-linux-gnu
+
+# Add kedro user
 ARG KEDRO_UID=999
 ARG KEDRO_GID=1000
 RUN groupadd -f -g ${KEDRO_GID} kedro_group && \
-useradd -d /home/kedro -s /bin/bash -g ${KEDRO_GID} -u ${KEDRO_UID} kedro
+    useradd -d /home/kedro -s /bin/bash -g ${KEDRO_GID} -u ${KEDRO_UID} kedro
 
-# Required for the SQLQueryDataSet
-# RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
-#    && apt-get install -y unixodbc-dev g++ \
-#    && apt-get update && export DEBIAN_FRONTEND=noninteractive \
-#    && curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - \
-#    && curl https://packages.microsoft.com/config/debian/11/prod.list > /etc/apt/sources.list.d/mssql-release.list \
-#    && apt-get update \
-#    && ACCEPT_EULA=Y apt-get install -y msodbcsql17 \
-#    && echo 'export PATH="$PATH:/opt/mssql-tools/bin"' >> ~/.bashrc \
-#    && apt-get clean -y && rm -rf /var/lib/apt/lists/*
+# Copy Python dependencies from the builder stage
+COPY --from=builder /usr/local/lib/python*/site-packages /usr/local/lib/python*/site-packages
 
-# copy the whole project except what is in .dockerignore
+# Copy the project files and set ownership
 WORKDIR /home/kedro
 COPY . .
 RUN chown -R kedro:${KEDRO_GID} /home/kedro
 USER kedro
-RUN chmod -R a+w /home/kedro
 
 EXPOSE 8888
 
-# ENTRYPOINT ["bash"]
-
-# The ENTRYPOINT specifies a command that will always be executed when the container starts
-# The CMD specifies arguments that will be fed to the ENTRYPOINT.
+# Command definition
 ENTRYPOINT ["kedro"]
 CMD ["test"]
