@@ -1,25 +1,25 @@
-# generalizations; fill PYTHONPATH from the directory contents of these paths
-ARR_PROJECTS=($HOME/work/projects $HOME/work/repos $HOME/work/sandbox)
-ARR_PROJECTS_PATHS=()
+# Set base project directories
+ARR_PROJECTS=($HOME/work/projects/ $HOME/work/repos/ $HOME/work/sandbox/)
 
-function join { local IFS="$1"; shift; echo "$*"; }
-
-# Enable special handling to prevent expansion to a
-# literal '/tmp/backup/*' when no matches are found.
+# Enable nullglob to safely handle empty directories
 shopt -s nullglob
 
+# Use a single loop and array manipulation
+ARR_PROJECTS_PATHS=()
 for path in "${ARR_PROJECTS[@]}"; do
-    FOLDERS=(${path}/*)
-    for folder in "${FOLDERS[@]}"; do
-        if [[ -d "$folder" ]]
-        then
-            ARR_PROJECTS_PATHS+=($folder)
+    # Glob for sub-directories only (dangling / helps, but test is safer)
+    for folder in ${path}*; do
+        if [[ -d "$folder" ]]; then
+            ARR_PROJECTS_PATHS+=("$folder")
         fi
     done
 done
 
-# Unset shell option after use, if desired. Nullglob
-# is unset by default.
+# Disable nullglob
 shopt -u nullglob
 
-export PYTHONPATH=$(join ':' ${ARR_PROJECTS_PATHS[@]})
+# Export PYTHONPATH using IFS to join array elements with ':'
+(
+    IFS=':'
+    export PYTHONPATH="${ARR_PROJECTS_PATHS[*]}"
+)
